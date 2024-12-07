@@ -4,6 +4,11 @@ on:
     types: [started]
 
   workflow_dispatch:
+    inputs:
+      KERNEL_SOURCE_BRANCH:
+        description: 'KERNEL_SOURCE_BRANCH'
+        required: true
+        default: 'master'
 
 jobs:
   build:
@@ -20,7 +25,7 @@ jobs:
       run: |
         CONFIG_ENV=$(cat config.env | grep -w "CONFIG_ENV" | head -n 1 | cut -d "=" -f 2)
         echo "KERNEL_SOURCE=$(cat $CONFIG_ENV | grep -w "KERNEL_SOURCE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
-        echo "KERNEL_SOURCE_BRANCH=$(cat $CONFIG_ENV | grep -w "KERNEL_SOURCE_BRANCH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "KERNEL_SOURCE_BRANCH=${{ github.event.inputs.KERNEL_SOURCE_BRANCH }}" >> $GITHUB_ENV
         echo "KERNEL_CONFIG=$(cat $CONFIG_ENV | grep -w "KERNEL_CONFIG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "KERNEL_IMAGE_NAME=$(cat $CONFIG_ENV | grep -w "KERNEL_IMAGE_NAME" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "KERNEL_IMAGE_NAME_MKBOOTIMG=$(cat $CONFIG_ENV | grep -w "KERNEL_IMAGE_NAME_MKBOOTIMG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV

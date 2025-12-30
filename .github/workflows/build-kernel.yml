@@ -8,7 +8,7 @@ on:
       KERNEL_SOURCE_BRANCH:
         description: 'KERNEL_SOURCE_BRANCH'
         required: true
-        default: 'sched-test'
+        default: 'lineage-22.2'
 
 jobs:
   build:

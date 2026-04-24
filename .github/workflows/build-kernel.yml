@@ -233,6 +233,10 @@ jobs:
         else
             make -j$(nproc --all) CC=clang O=out ARCH=${{ env.ARCH }} ${{ env.CUSTOM_CMDS }} ${{ env.EXTRA_CMDS }} ${{ env.GCC_64 }} ${{ env.GCC_32 }}
         fi
+        # Build kernel modules
+        make -j$(nproc --all) CC=clang O=out ARCH=${{ env.ARCH }} ${{ env.CUSTOM_CMDS }} ${{ env.EXTRA_CMDS }} ${{ env.GCC_64 }} ${{ env.GCC_32 }} modules
+        # Install modules to a staging directory
+        make -j1 O=out ARCH=${{ env.ARCH }} INSTALL_MOD_PATH=$(pwd)/out/modules modules_install
 
     - name: Check a kernel output files
       run: |
@@ -261,22 +265,11 @@ jobs:
         if [ ${{ env.CHECK_DTBO_IS_OK }} = true ]; then
             cp android-kernel/out/arch/${{ env.ARCH }}/boot/dtbo.img AnyKernel3/
         fi
-        # Copy kernel modules (.ko) if any exist
-        if [ -d android-kernel/out/system/lib/modules ]; then
-            mkdir -p AnyKernel3/modules/system/lib/modules
-            cp android-kernel/out/system/lib/modules/*.ko AnyKernel3/modules/system/lib/modules/ 2>/dev/null || true
+        # Copy kernel modules (.ko) from modules_install staging directory
+        if [ -d android-kernel/out/modules/lib/modules ]; then
+            mkdir -p AnyKernel3/system/lib/modules
+            find android-kernel/out/modules/lib/modules -name "*.ko" -exec cp {} AnyKernel3/system/lib/modules/ \;
         fi
-        if [ -d android-kernel/out/vendor/lib/modules ]; then
-            mkdir -p AnyKernel3/modules/vendor/lib/modules
-            cp android-kernel/out/vendor/lib/modules/*.ko AnyKernel3/modules/vendor/lib/modules/ 2>/dev/null || true
-        fi
-        # Copy all .ko files from out directory
-        find android-kernel/out -name "*.ko" -not -path "*/AnyKernel3/*" | while read ko; do
-            ko_relpath=$(echo $ko | sed 's|android-kernel/out/||')
-            ko_dir=$(dirname $ko_relpath)
-            mkdir -p "AnyKernel3/modules/$ko_dir"
-            cp "$ko" "AnyKernel3/modules/$ko_dir/"
-        done
         rm -rf AnyKernel3/.git* AnyKernel3/README.md
 
     - name: Make boot image

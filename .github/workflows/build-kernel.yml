@@ -233,10 +233,6 @@ jobs:
         else
             make -j$(nproc --all) CC=clang O=out ARCH=${{ env.ARCH }} ${{ env.CUSTOM_CMDS }} ${{ env.EXTRA_CMDS }} ${{ env.GCC_64 }} ${{ env.GCC_32 }}
         fi
-        # Build kernel modules
-        make -j$(nproc --all) CC=clang O=out ARCH=${{ env.ARCH }} ${{ env.CUSTOM_CMDS }} ${{ env.EXTRA_CMDS }} ${{ env.GCC_64 }} ${{ env.GCC_32 }} modules
-        # Install modules to a staging directory
-        make -j1 O=out ARCH=${{ env.ARCH }} INSTALL_MOD_PATH=$(pwd)/out/modules modules_install
 
     - name: Check a kernel output files
       run: |
@@ -264,11 +260,6 @@ jobs:
         cp android-kernel/out/arch/${{ env.ARCH }}/boot/${{ env.KERNEL_IMAGE_NAME }} AnyKernel3/
         if [ ${{ env.CHECK_DTBO_IS_OK }} = true ]; then
             cp android-kernel/out/arch/${{ env.ARCH }}/boot/dtbo.img AnyKernel3/
-        fi
-        # Copy kernel modules (.ko) from modules_install staging directory
-        if [ -d android-kernel/out/modules/lib/modules ]; then
-            mkdir -p AnyKernel3/system/lib/modules
-            find android-kernel/out/modules/lib/modules -name "*.ko" -exec cp {} AnyKernel3/system/lib/modules/ \;
         fi
         rm -rf AnyKernel3/.git* AnyKernel3/README.md
 
